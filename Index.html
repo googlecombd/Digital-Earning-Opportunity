@@ -2,322 +2,365 @@
 <html lang="bn">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>The Superstar Academy | Official Support</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>The Superstar Academy | Executive Assessment</title>
     
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&family=Hind+Siliguri:wght@400;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
 
     <style>
         :root {
-            --primary: #6366f1;
-            --primary-dark: #4338ca;
-            --secondary: #f43f5e;
+            --primary: #4f46e5;
+            --secondary: #818cf8;
             --success: #10b981;
-            --danger: #ef4444;
-            --glass: rgba(255, 255, 255, 0.9);
+            --danger: #f43f5e;
+            --bg-gradient: linear-gradient(135deg, #f8faff 0%, #eef2ff 100%);
+            --glass-bg: rgba(255, 255, 255, 0.9);
             --text-main: #1e293b;
         }
 
-        * { box-sizing: border-box; margin: 0; padding: 0; }
+        * { box-sizing: border-box; margin: 0; padding: 0; outline: none; }
         
         body { 
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: var(--bg-gradient);
             font-family: 'Outfit', 'Hind Siliguri', sans-serif;
             min-height: 100vh;
             display: flex;
             align-items: center;
             justify-content: center;
             color: var(--text-main);
-            overflow-x: hidden;
+            overflow: hidden;
+            touch-action: none;
         }
+
+        #canvas {
+            position: fixed; top: 0; left: 0;
+            width: 100%; height: 100%;
+            z-index: 1; pointer-events: none;
+        }
+
+        .shape {
+            position: absolute; border-radius: 50%; filter: blur(60px); z-index: 0; opacity: 0.4;
+            animation: move 20s infinite alternate;
+        }
+        .shape-1 { width: 300px; height: 300px; background: var(--primary); top: -50px; left: -50px; }
+        .shape-2 { width: 250px; height: 250px; background: var(--secondary); bottom: -50px; right: -50px; animation-delay: -5s; }
+        @keyframes move { from { transform: translate(0,0); } to { transform: translate(50px, 100px); } }
 
         #loader {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: #fff; z-index: 9999; display: flex;
-            justify-content: center; align-items: center; flex-direction: column;
+            position: fixed; inset: 0; background: #fff; z-index: 9999;
+            display: flex; justify-content: center; align-items: center; flex-direction: column;
         }
-        .loader-icon { font-size: 4rem; color: var(--primary); animation: bounce 1s infinite; }
-        @keyframes bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-20px); } }
+        .loader-ring { width: 60px; height: 60px; border: 4px solid #f1f5f9; border-top-color: var(--primary); border-radius: 50%; animation: spin 0.8s infinite linear; }
+        @keyframes spin { to { transform: rotate(360deg); } }
 
-        .container { width: 95%; max-width: 600px; margin: 20px; z-index: 10; display: none; }
+        .app-container {
+            width: 92%; max-width: 650px; z-index: 10; display: none;
+            perspective: 1000px;
+        }
 
-        .glass-card {
-            background: var(--glass);
+        .premium-card {
+            background: var(--glass-bg);
             backdrop-filter: blur(15px);
-            border-radius: 30px;
-            padding: 40px;
-            box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25);
-            border: 1px solid rgba(255,255,255,0.3);
-            text-align: center;
+            border-radius: 35px; padding: 45px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.6);
+            position: relative; overflow: hidden;
         }
 
-        .lang-switch {
-            display: flex;
-            justify-content: center;
-            gap: 10px;
-            margin-bottom: 20px;
-        }
-        .lang-btn {
-            padding: 8px 15px;
-            border-radius: 50px;
-            border: 2px solid var(--primary);
-            background: transparent;
-            color: var(--primary);
-            font-weight: 700;
-            cursor: pointer;
-            transition: 0.3s;
-            font-size: 0.8rem;
-        }
-        .lang-btn.active {
-            background: var(--primary);
-            color: white;
+        .premium-card::before {
+            content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 5px;
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
         }
 
-        .header h1 { font-size: 1.8rem; font-weight: 800; color: var(--primary); margin-bottom: 5px; }
-        .provided-by { font-size: 0.85rem; color: #64748b; margin-bottom: 25px; line-height: 1.4; }
-        .badge { background: #e0e7ff; color: var(--primary); padding: 4px 12px; border-radius: 50px; font-size: 0.7rem; font-weight: 700; text-transform: uppercase; }
+        .header-section { text-align: center; margin-bottom: 30px; }
+        .official-badge {
+            background: rgba(79, 70, 229, 0.1); color: var(--primary);
+            padding: 6px 15px; border-radius: 50px; font-size: 11px;
+            font-weight: 800; text-transform: uppercase; letter-spacing: 1.5px;
+            display: inline-block; margin-bottom: 15px;
+        }
+        .main-title { font-size: 2rem; font-weight: 800; color: #0f172a; margin-bottom: 5px; }
+        
+        .mentor-card {
+            background: #fff; display: inline-flex; align-items: center; padding: 10px 20px;
+            border-radius: 20px; border: 1px solid #e2e8f0; margin-top: 10px;
+        }
+        .mentor-details { text-align: left; margin-left: 12px; }
+        .mentor-details h4 { font-size: 0.95rem; color: var(--primary); font-weight: 800; }
+        .mentor-details p { font-size: 0.75rem; color: #64748b; font-weight: 600; }
 
-        .input-group { text-align: left; margin-bottom: 20px; position: relative; }
-        .input-group label { display: block; font-size: 0.9rem; font-weight: 600; margin-bottom: 8px; color: #475569; }
-        .input-group input { 
-            width: 100%; padding: 15px 20px; border-radius: 15px; border: 2px solid #e2e8f0;
+        .lang-toggle { position: absolute; top: 25px; right: 25px; display: flex; background: #f1f5f9; padding: 4px; border-radius: 12px; }
+        .tgl-btn { padding: 6px 12px; border: none; background: none; font-size: 11px; font-weight: 800; cursor: pointer; border-radius: 8px; transition: 0.3s; }
+        .tgl-btn.active { background: white; color: var(--primary); box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
+
+        .progress-meta { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; font-weight: 700; font-size: 0.9rem; }
+        .progress-track { height: 10px; background: #f1f5f9; border-radius: 50px; margin-bottom: 35px; overflow: hidden; }
+        .progress-bar { height: 100%; background: linear-gradient(90deg, var(--primary), var(--secondary)); width: 0%; transition: 0.6s cubic-bezier(0.34, 1.56, 0.64, 1); }
+
+        .question-box h3 { font-size: 1.3rem; font-weight: 700; margin-bottom: 25px; line-height: 1.5; color: #0f172a; }
+        
+        .opt-item {
+            background: white; border: 2px solid #f1f5f9; padding: 20px;
+            border-radius: 20px; margin-bottom: 15px; cursor: pointer;
+            display: flex; align-items: center; justify-content: space-between;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); font-weight: 600;
+        }
+        .opt-item:hover:not(.locked) { transform: scale(1.02); border-color: var(--primary); background: #f5f7ff; }
+        .opt-item.correct { background: #ecfdf5 !important; border-color: var(--success) !important; color: #065f46; }
+        .opt-item.wrong { background: #fff1f2 !important; border-color: var(--danger) !important; color: #9f1239; }
+        
+        .opt-icon { width: 24px; height: 24px; border-radius: 50%; border: 2px solid #e2e8f0; display: flex; align-items: center; justify-content: center; font-size: 12px; }
+        .correct .opt-icon { background: var(--success); border-color: var(--success); color: white; }
+        .wrong .opt-icon { background: var(--danger); border-color: var(--danger); color: white; }
+
+        .action-area { display: flex; gap: 15px; margin-top: 30px; }
+        .nav-btn {
+            flex: 1; padding: 20px; border-radius: 20px; border: none;
+            font-size: 1rem; font-weight: 800; cursor: pointer; transition: 0.3s;
+            display: flex; align-items: center; justify-content: center; gap: 10px;
+        }
+        .btn-next { background: var(--primary); color: white; box-shadow: 0 10px 20px -5px rgba(79, 70, 229, 0.4); }
+        .btn-back { background: #f1f5f9; color: #64748b; }
+
+        .input-wrap { text-align: left; margin-bottom: 25px; }
+        .input-wrap label { display: block; font-weight: 700; color: #475569; margin-bottom: 10px; font-size: 0.9rem; }
+        .input-wrap input { 
+            width: 100%; padding: 18px; border-radius: 18px; border: 2px solid #e2e8f0;
             background: #f8fafc; font-size: 1rem; transition: 0.3s;
         }
-        .input-group input:focus { border-color: var(--primary); outline: none; background: #fff; }
 
-        .shake { animation: shake 0.4s; border-color: var(--danger) !important; }
-        @keyframes shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-8px); } 50% { transform: translateX(8px); } }
-
-        .q-box { text-align: left; animation: slideIn 0.5s ease; }
-        @keyframes slideIn { from { opacity: 0; transform: translateX(30px); } to { opacity: 1; transform: translateX(0); } }
-
-        .q-text { font-size: 1.2rem; font-weight: 700; margin-bottom: 20px; line-height: 1.4; }
-        
-        .option {
-            background: #fff; border: 2px solid #f1f5f9; padding: 15px 20px;
-            border-radius: 18px; margin-bottom: 12px; cursor: pointer;
-            display: flex; justify-content: space-between; align-items: center;
-            transition: 0.2s; font-weight: 600;
+        /* লাল কালারের জন্য নতুন ক্লাস */
+        .input-error {
+            border-color: var(--danger) !important;
+            background: #fff1f2 !important;
+            animation: shake 0.4s ease;
         }
-        .option:hover:not(.locked) { border-color: var(--primary); transform: translateY(-2px); }
 
-        .correct { background: #d1fae5 !important; border-color: var(--success) !important; color: #065f46; }
-        .wrong { background: #fee2e2 !important; border-color: var(--danger) !important; color: #991b1b; }
-        .locked { cursor: not-allowed; opacity: 0.9; }
-
-        .progress-container { height: 8px; background: #e2e8f0; border-radius: 10px; margin-bottom: 30px; overflow: hidden; }
-        .progress-bar { height: 100%; background: var(--primary); width: 0%; transition: 0.4s; }
-
-        .btn-box { display: flex; gap: 10px; margin-top: 25px; }
-        .btn { 
-            flex: 1; padding: 16px; border-radius: 15px; border: none; 
-            font-weight: 700; cursor: pointer; transition: 0.3s; font-family: inherit;
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-10px); }
+            75% { transform: translateX(10px); }
         }
-        .btn-main { background: var(--primary); color: #fff; box-shadow: 0 10px 15px -3px rgba(99,102,241,0.4); }
-        .btn-prev { background: #f1f5f9; color: #64748b; }
-        .btn:disabled { opacity: 0.5; }
 
-        .result-circle { width: 120px; height: 120px; border-radius: 50%; border: 8px solid var(--primary); margin: 0 auto 20px; display: flex; align-items: center; justify-content: center; font-size: 2rem; font-weight: 800; color: var(--primary); }
+        .score-display {
+            width: 150px; height: 150px; border-radius: 50%; border: 8px solid var(--primary);
+            margin: 0 auto 25px; display: flex; align-items: center; justify-content: center;
+            font-size: 2.5rem; font-weight: 900; color: var(--primary); background: #f5f7ff;
+        }
     </style>
 </head>
 <body>
 
+    <audio id="sound-click" src="https://assets.mixkit.co/active_storage/sfx/2568/2568-preview.mp3"></audio>
+    <audio id="sound-success" src="https://assets.mixkit.co/active_storage/sfx/1435/1435-preview.mp3"></audio>
+    <audio id="sound-error" src="https://assets.mixkit.co/active_storage/sfx/2573/2573-preview.mp3"></audio>
+
+    <div class="shape shape-1"></div>
+    <div class="shape shape-2"></div>
+    <canvas id="canvas"></canvas>
+
     <div id="loader">
-        <div class="loader-icon"><i class="fas fa-graduation-cap"></i></div>
-        <h2 style="margin-top:20px; letter-spacing: 2px;">THE SUPERSTAR ACADEMY</h2>
-        <p style="color: #64748b;">Loading Assessment...</p>
+        <div class="loader-ring"></div>
+        <p style="margin-top: 20px; font-weight: 800; letter-spacing: 2px; color: var(--primary);">AUTHENTICATING...</p>
     </div>
 
-    <div class="container" id="quiz-app">
-        <div class="glass-card">
-            <div class="lang-switch">
-                <button class="lang-btn active" id="btn-en" onclick="setLang('en')">English</button>
-                <button class="lang-btn" id="btn-bn" onclick="setLang('bn')">বাংলা</button>
+    <div class="app-container" id="app">
+        <div class="premium-card">
+            
+            <div class="lang-toggle">
+                <button class="tgl-btn active" id="btn-en" onclick="changeLang('en')">EN</button>
+                <button class="tgl-btn" id="btn-bn" onclick="changeLang('bn')">বাংলা</button>
             </div>
 
-            <div class="header">
-                <span class="badge">Official Support Team</span>
-                <h1>The Superstar Academy</h1>
-                <p class="provided-by">Provided by <b>Juwel Rana Sir</b><br>
-                <small>Corporate Trainer | Co-Founder | Assistant Manager</small></p>
+            <div class="header-section">
+                <div class="official-badge">Verified Assessment</div>
+                <h1 class="main-title">Superstar Academy</h1>
+                <div class="mentor-card">
+                    <img src="https://cdn-icons-png.flaticon.com/512/1995/1995539.png" width="35" alt="Mentor">
+                    <div class="mentor-details">
+                        <h4>Juwel Rana Sir</h4>
+                        <p>Corporate Trainer • Co-Founder • Manager</p>
+                    </div>
+                </div>
             </div>
 
-            <div id="start-screen">
-                <div class="input-group">
-                    <label id="lbl-name">Full Name *</label>
-                    <input type="text" id="userName" placeholder="e.g. Rahul Hasan">
+            <div id="screen-start">
+                <div class="input-wrap">
+                    <label id="lbl-u">Candidate Full Name</label>
+                    <input type="text" id="userName" placeholder="Enter your official name" oninput="this.classList.remove('input-error')">
                 </div>
-                <div class="input-group">
-                    <label id="lbl-mentor">Mentor Name *</label>
-                    <input type="text" id="mentorName" placeholder="e.g. Juwel Rana">
+                <div class="input-wrap">
+                    <label id="lbl-m">Assigned Mentor Name</label>
+                    <input type="text" id="mentorName" placeholder="Enter mentor name" oninput="this.classList.remove('input-error')">
                 </div>
-                <button class="btn btn-main" style="width:100%" onclick="startQuiz()" id="btn-start">
-                    Start Assessment <i class="fas fa-rocket" style="margin-left:8px;"></i>
+                <button class="nav-btn btn-next" style="width: 100%;" onclick="initQuiz()">
+                    Access Assessment <i class="fas fa-chevron-right"></i>
                 </button>
             </div>
 
-            <div id="quiz-screen" style="display:none;">
-                <div class="progress-container"><div class="progress-bar" id="progress"></div></div>
-                <div id="question-container" class="q-box"></div>
-                <div class="btn-box">
-                    <button class="btn btn-prev" id="prevBtn" onclick="goPrev()"><i class="fas fa-chevron-left"></i> Previous</button>
-                    <button class="btn btn-main" id="nextBtn" onclick="goNext()">Next <i class="fas fa-chevron-right"></i></button>
+            <div id="screen-quiz" style="display: none;">
+                <div class="progress-meta">
+                    <span id="q-count">Question 1/10</span>
+                    <span id="q-percent">0%</span>
+                </div>
+                <div class="progress-track"><div class="progress-bar" id="p-bar"></div></div>
+                <div class="question-box" id="q-area"></div>
+                <div class="action-area">
+                    <button class="nav-btn btn-back" id="backBtn" onclick="prevQ()">Back</button>
+                    <button class="nav-btn btn-next" id="nextBtn" onclick="nextQ()">Next</button>
                 </div>
             </div>
 
-            <div id="result-screen" style="display:none;">
-                <div class="result-circle" id="final-score">0%</div>
-                <h3 id="status-text">Assessment Complete!</h3>
-                <p id="feedback-text" style="margin: 15px 0; color: #64748b;"></p>
-                <div id="db-status" style="font-size: 0.8rem; margin-bottom: 20px; color: var(--primary);">Saving results...</div>
-                <a href="https://www.facebook.com" class="btn btn-main" style="text-decoration:none; display:block;" id="btn-fb">
-                    <i class="fab fa-facebook-messenger"></i> Back to Facebook
+            <div id="screen-result" style="display: none; text-align: center;">
+                <div class="score-display" id="final-p">0%</div>
+                <h2 id="final-h" style="font-size: 1.8rem; margin-bottom: 10px;">Excellent Performance!</h2>
+                <p id="final-sub" style="color: #64748b; margin-bottom: 30px; font-weight: 600;">Your results have been securely synced.</p>
+                <div id="sync-status" style="margin-bottom: 20px; font-size: 12px; font-weight: 800; color: var(--success);"></div>
+                <a href="https://www.facebook.com" class="nav-btn btn-next" style="text-decoration: none;">
+                    <i class="fab fa-facebook-messenger"></i> Back to Mentor
                 </a>
             </div>
+
         </div>
     </div>
 
 <script>
-    // --- Configuration ---
-    const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbx27LIbHlN57wDjK_CUHSIFY7sel2yyqz96ZRRK3zTtmiIe5paJKytPf_BGofKkGieiPQ/exec"; 
-    
-    let currentLang = 'en';
+    const canvas = document.getElementById('canvas'), ctx = canvas.getContext('2d');
+    canvas.width = window.innerWidth; canvas.height = window.innerHeight;
+    let particles = [];
+    const colors = ['#4f46e5', '#818cf8', '#10b981', '#f43f5e'];
+
+    class Particle {
+        constructor(x, y) {
+            this.x = x; this.y = y;
+            this.size = Math.random() * 5 + 2;
+            this.speedX = (Math.random() * 4) - 2;
+            this.speedY = (Math.random() * 4) - 2;
+            this.alpha = 1;
+        }
+        update() { this.x += this.speedX; this.y += this.speedY; this.alpha -= 0.015; }
+        draw() { ctx.globalAlpha = this.alpha; ctx.fillStyle = colors[0]; ctx.beginPath(); ctx.arc(this.x, this.y, this.size, 0, 7); ctx.fill(); }
+    }
+
+    function animate() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        particles.forEach((p, i) => { p.update(); p.draw(); if(p.alpha <= 0) particles.splice(i, 1); });
+        requestAnimationFrame(animate);
+    }
+    animate();
+    window.addEventListener('mousedown', (e) => { for(let i=0; i<10; i++) particles.push(new Particle(e.clientX, e.clientY)); });
+
+    let lang = 'en', current = 0, answers = Array(10).fill(null);
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwxpxAejkEamwEd8nPSO1c7uuFz-qDSvu3pmXoSP3wodLpKxfgUR9x07kc7tz4dGcJRww/exec";
 
     const quizData = [
         { en: { q: "Which stage is called 'The Golden period of life'?", opts: ["Childhood", "Youth (21-40)", "Old Age"] }, bn: { q: "কোনটি জীবনের সুবর্ণ সময়?", opts: ["শৈশব", "যৌবন (২১-৪০)", "বার্ধক্য"] }, ans: 1 },
-        { en: { q: "Suppose, You want to buy a bike to make your journey more easier, this is your -", opts: ["Need", "Want", "Dream"] }, bn: { q: "ভ্রমণ সহজ করতে আপনি একটি বাইক কিনতে চান, এটি আপনার -", opts: ["প্রয়োজন", "চাহিদা", "স্বপ্ন"] }, ans: 1 },
-        { en: { q: "If You have a group of people who works for you, then You are earning by doing -", opts: ["Time Trades", "Time Leverage"] }, bn: { q: "যদি আপনার জন্য একদল লোক কাজ করে, তবে আপনি আয় করছেন -", opts: ["টাইম ট্রেড করে", "টাইম লেভারেজ করে"] }, ans: 1 },
+        { en: { q: "Suppose, You want to buy a bike to make your journey easier, this is your -", opts: ["Need", "Want", "Dream"] }, bn: { q: "ভ্রমণ সহজ করতে আপনি একটি বাইক কিনতে চান, এটি আপনার -", opts: ["প্রয়োজন", "চাহিদা", "স্বপ্ন"] }, ans: 1 },
+        { en: { q: "If You have a group of people working for you, you are earning by -", opts: ["Time Trades", "Time Leverage"] }, bn: { q: "যদি আপনার জন্য একদল লোক কাজ করে, তবে আপনি আয় করছেন -", opts: ["টাইম ট্রেড করে", "টাইম লেভারেজ করে"] }, ans: 1 },
         { en: { q: "Time Leverage is related with -", opts: ["Active Income", "Passive Income"] }, bn: { q: "টাইম লেভারেজ কিসের সাথে যুক্ত?", opts: ["সক্রিয় আয়", "প্যাসিভ আয়"] }, ans: 1 },
         { en: { q: "What is the 21st century's business model called?", opts: ["Job Model", "Traditional Model", "Network Marketing"] }, bn: { q: "একুশ শতকের ব্যবসার মডেলকে কি বলা হয়?", opts: ["চাকরি মডেল", "ঐতিহ্যগত মডেল", "নেটওয়ার্ক মার্কেটিং"] }, ans: 2 },
         { en: { q: "Business owners -", opts: ["Run after a fixed income", "Create network and own a system"] }, bn: { q: "ব্যবসায়িক মালিকরা মূলত -", opts: ["নির্দিষ্ট আয়ের পেছনে দৌড়ান", "নেটওয়ার্ক তৈরি করেন এবং সিস্টেমের মালিক হন"] }, ans: 1 },
-        { en: { q: "What is the main mission of THE DREAMERS ACADEMY?", opts: ["Skill Development", "Only Profit", "Selling Products"] }, bn: { q: "THE DREAMERS ACADEMY-এর মূল লক্ষ্য কী?", opts: ["দক্ষতা উন্নয়ন", "শুধু লাভ করা", "পণ্য বিক্রি করা"] }, ans: 0 },
+        { en: { q: "What is the main mission of THE SUPERSTAR ACADEMY?", opts: ["Skill Development", "Only Profit", "Selling Products"] }, bn: { q: "THE SUPERSTAR ACADEMY-এর মূল লক্ষ্য কী?", opts: ["দক্ষতা উন্নয়ন", "শুধু লাভ করা", "পণ্য বিক্রি করা"] }, ans: 0 },
         { en: { q: "'Shutter off, income off': related to -", opts: ["Employee", "Business owner", "Self employed", "Investor"] }, bn: { q: "'শাটার বন্ধ, আয় বন্ধ': এটি কোনটির সাথে যুক্ত?", opts: ["চাকরিজীবী", "ব্যবসায়িক মালিক", "স্ব-নিযুক্ত (Self-employed)", "বিনিয়োগকারী"] }, ans: 2 },
         { en: { q: "Why Traditional business is a complex business model?", opts: ["High Investment & Risk", "Easy Management", "No Competition"] }, bn: { q: "ঐতিহ্যগত ব্যবসা কেন একটি জটিল মডেল?", opts: ["উচ্চ বিনিয়োগ এবং ঝুঁকি", "সহজ ব্যবস্থাপনা", "কোন প্রতিযোগিতা নেই"] }, ans: 0 },
         { en: { q: "Network Marketing offers -", opts: ["A ready made business system", "A complex system", "Lots of management headache"] }, bn: { q: "নেটওয়ার্ক মার্কেটিং অফার করে -", opts: ["একটি তৈরি ব্যবসায়িক সিস্টেম", "একটি জটিল সিস্টেম", "প্রচুর ম্যানেজমেন্টের ঝামেলা"] }, ans: 0 }
     ];
 
-    let currentQ = 0;
-    let userAnswers = Array(quizData.length).fill(null);
+    window.onload = () => { setTimeout(() => { document.getElementById('loader').style.display='none'; document.getElementById('app').style.display='block'; }, 1500); };
 
-    window.onload = () => {
-        setTimeout(() => {
-            document.getElementById('loader').style.display = 'none';
-            document.getElementById('quiz-app').style.display = 'block';
-        }, 3000);
-    };
+    function changeLang(l) {
+        lang = l;
+        document.querySelectorAll('.tgl-btn').forEach(b => b.classList.remove('active'));
+        document.getElementById('btn-'+l).classList.add('active');
+        if(document.getElementById('screen-quiz').style.display === 'block') renderQ();
+    }
 
-    function setLang(lang) {
-        currentLang = lang;
-        document.getElementById('btn-en').classList.toggle('active', lang === 'en');
-        document.getElementById('btn-bn').classList.toggle('active', lang === 'bn');
-        
-        if(lang === 'bn') {
-            document.getElementById('lbl-name').innerText = "আপনার পূর্ণ নাম *";
-            document.getElementById('lbl-mentor').innerText = "মেন্টরের নাম *";
-            document.getElementById('userName').placeholder = "যেমন: রাহুল হাসান";
-            document.getElementById('mentorName').placeholder = "যেমন: জুয়েল রানা";
-            document.getElementById('btn-start').innerHTML = 'শুরু করুন <i class="fas fa-rocket"></i>';
-            document.getElementById('prevBtn').innerHTML = '<i class="fas fa-chevron-left"></i> পিছনে';
-            document.getElementById('nextBtn').innerHTML = 'পরবর্তী <i class="fas fa-chevron-right"></i>';
-            document.getElementById('btn-fb').innerHTML = '<i class="fab fa-facebook-messenger"></i> ফেসবুকে ফিরে যান';
-        } else {
-            document.getElementById('lbl-name').innerText = "Full Name *";
-            document.getElementById('lbl-mentor').innerText = "Mentor Name *";
-            document.getElementById('userName').placeholder = "e.g. Rahul Hasan";
-            document.getElementById('mentorName').placeholder = "e.g. Juwel Rana";
-            document.getElementById('btn-start').innerHTML = 'Start Assessment <i class="fas fa-rocket"></i>';
-            document.getElementById('prevBtn').innerHTML = '<i class="fas fa-chevron-left"></i> Previous';
-            document.getElementById('nextBtn').innerHTML = 'Next <i class="fas fa-chevron-right"></i>';
-            document.getElementById('btn-fb').innerHTML = '<i class="fab fa-facebook-messenger"></i> Back to Facebook';
+    function initQuiz() {
+        const userInp = document.getElementById('userName');
+        const mentorInp = document.getElementById('mentorName');
+        let isValid = true;
+
+        if(!userInp.value.trim()) {
+            userInp.classList.add('input-error');
+            isValid = false;
         }
-        if(document.getElementById('quiz-screen').style.display === 'block') showQuestion();
+        if(!mentorInp.value.trim()) {
+            mentorInp.classList.add('input-error');
+            isValid = false;
+        }
+
+        if(!isValid) {
+            document.getElementById('sound-error').play();
+            return;
+        }
+
+        document.getElementById('sound-click').play();
+        document.getElementById('screen-start').style.display = 'none';
+        document.getElementById('screen-quiz').style.display = 'block';
+        renderQ();
     }
 
-    function startQuiz() {
-        const u = document.getElementById('userName'), m = document.getElementById('mentorName');
-        if(!u.value.trim()) return u.classList.add('shake'), setTimeout(()=>u.classList.remove('shake'), 400);
-        if(!m.value.trim()) return m.classList.add('shake'), setTimeout(()=>m.classList.remove('shake'), 400);
-        document.getElementById('start-screen').style.display = 'none';
-        document.getElementById('quiz-screen').style.display = 'block';
-        showQuestion();
-    }
-
-    function showQuestion() {
-        const data = quizData[currentQ][currentLang];
-        const container = document.getElementById('question-container');
-        document.getElementById('progress').style.width = ((currentQ + 1) / quizData.length) * 100 + "%";
-        document.getElementById('prevBtn').disabled = currentQ === 0;
-        let html = `<div class="q-text">${currentQ + 1}. ${data.q}</div>`;
-        data.opts.forEach((opt, i) => {
-            let stateClass = "";
-            if (userAnswers[currentQ] !== null) {
-                if (i === quizData[currentQ].ans) stateClass = "correct locked";
-                else if (i === userAnswers[currentQ]) stateClass = "wrong locked";
-                else stateClass = "locked";
-            }
-            html += `<div class="option ${stateClass}" onclick="selectOption(${i})"><span>${opt}</span></div>`;
+    function renderQ() {
+        const data = quizData[current][lang];
+        document.getElementById('q-count').innerText = `Question ${current+1}/10`;
+        const p = ((current + 1) / 10) * 100;
+        document.getElementById('p-bar').style.width = p + "%";
+        document.getElementById('q-percent').innerText = p + "%";
+        let html = `<h3>${current+1}. ${data.q}</h3>`;
+        data.opts.forEach((o, i) => {
+            let cls = "opt-item " + (answers[current] !== null ? (i===quizData[current].ans?"correct":(i===answers[current]?"wrong":"locked")) : "");
+            html += `<div class="${cls}" onclick="handleSelect(${i})"><span>${o}</span></div>`;
         });
-        container.innerHTML = html;
+        document.getElementById('q-area').innerHTML = html;
+        document.getElementById('backBtn').disabled = (current === 0);
+        document.getElementById('nextBtn').disabled = (answers[current] === null);
     }
 
-    function selectOption(idx) {
-        if (userAnswers[currentQ] !== null) return;
-        userAnswers[currentQ] = idx;
-        showQuestion();
-        setTimeout(() => {
-            if (currentQ < quizData.length - 1) { currentQ++; showQuestion(); } 
-            else { calculateResult(); }
-        }, 1200);
+    function handleSelect(i) {
+        if(answers[current] !== null) return;
+        answers[current] = i;
+        document.getElementById(i === quizData[current].ans ? 'sound-success' : 'sound-error').play();
+        renderQ();
     }
 
-    function goPrev() { if (currentQ > 0) { currentQ--; showQuestion(); } }
-    function goNext() { 
-        if (userAnswers[currentQ] !== null) {
-            if (currentQ < quizData.length - 1) { currentQ++; showQuestion(); }
-            else calculateResult();
-        }
-    }
+    function prevQ() { current--; renderQ(); }
+    function nextQ() { if(current < 9) { current++; renderQ(); } else { showResult(); } }
 
-    function calculateResult() {
-        document.getElementById('quiz-screen').style.display = 'none';
-        document.getElementById('result-screen').style.display = 'block';
-        let correct = 0;
-        userAnswers.forEach((ans, i) => { if(ans === quizData[i].ans) correct++; });
-        const percent = Math.round((correct / quizData.length) * 100);
-        document.getElementById('final-score').innerText = percent + "%";
-        const feedback = document.getElementById('feedback-text');
-        if (percent >= 80) {
-            feedback.innerHTML = currentLang === 'en' ? "🌟 <b>Congratulations!</b> You are selected." : "🌟 <b>অভিনন্দন!</b> আপনি নির্বাচিত হয়েছেন।";
-            confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 } });
-        } else {
-            feedback.innerText = currentLang === 'en' ? "Assessment Complete. Mentor will review." : "পরীক্ষা সম্পন্ন হয়েছে। মেন্টর ফলাফল দেখবেন।";
-        }
-        sendToGoogleSheet(correct, percent);
-    }
+    function showResult() {
+        document.getElementById('screen-quiz').style.display = 'none';
+        document.getElementById('screen-result').style.display = 'block';
+        let scoreCount = answers.filter((a, i) => a === quizData[i].ans).length;
+        let percentText = (scoreCount * 10) + "%";
+        document.getElementById('final-p').innerText = percentText;
 
-    function sendToGoogleSheet(score, percent) {
-        // Detailed Answers extraction
-        const questionAnswers = quizData.map((item, index) => {
-            const selectedIdx = userAnswers[index];
-            return selectedIdx !== null ? item.en.opts[selectedIdx] : "Not Answered";
-        });
-
-        const data = {
+        const payload = {
             name: document.getElementById('userName').value,
             mentor: document.getElementById('mentorName').value,
-            percent: percent + "%",
-            answers: questionAnswers 
+            percent: percentText,
+            answers: answers.map((a, i) => a !== null ? quizData[i][lang].opts[a] : "Not Answered")
         };
 
-        fetch(GOOGLE_SCRIPT_URL, { 
+        document.getElementById('sync-status').innerText = "🔄 SYNCING DATA...";
+        
+        fetch(SCRIPT_URL, { 
             method: 'POST', 
             mode: 'no-cors', 
-            body: JSON.stringify(data) 
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload) 
         })
-        .then(() => { 
-            document.getElementById('db-status').innerText = currentLang === 'bn' ? "✅ ফলাফল সফলভাবে সেভ হয়েছে!" : "✅ Result Saved!"; 
+        .then(() => {
+            document.getElementById('sync-status').innerText = "✅ DATA SECURELY LOGGED";
+            if(scoreCount >= 8) {
+                confetti({ particleCount: 200, spread: 70 });
+                document.getElementById('sound-success').play();
+            }
+        })
+        .catch(err => {
+            console.error(err);
+            document.getElementById('sync-status').innerText = "❌ SYNC FAILED";
         });
     }
 </script>
